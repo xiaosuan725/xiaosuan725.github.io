@@ -50,6 +50,11 @@ test("keeps the light, controls, and simulation in the shipped source", async ()
   assert.match(experience, /new THREE\.HemisphereLight/);
   assert.match(experience, /new THREE\.DirectionalLight/);
   assert.match(experience, /new THREE\.SpotLight/);
+  assert.doesNotMatch(experience, /ConeGeometry/);
+  assert.match(experience, /event\.button === 2/);
+  assert.match(experience, /Math\.round\(beamStartAngle \+ movementX \* 0\.14\)/);
+  assert.match(experience, /shouldCycleColor/);
+  assert.match(experience, /contextmenu/);
   assert.match(experience, /const BASE_LIGHT_DIRECTION = DOWN\.clone\(\)/);
   assert.match(experience, /const cameraDrop = portrait/);
   assert.match(experience, /const upwardTarget = portrait/);

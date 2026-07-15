@@ -70,6 +70,11 @@ button {
   cursor: grabbing;
 }
 
+.page-source.is-adjusting-beam,
+.page-source.is-adjusting-beam * {
+  cursor: ew-resize !important;
+}
+
 .page-source {
   --lamp-color: #ffb36b;
   position: relative;

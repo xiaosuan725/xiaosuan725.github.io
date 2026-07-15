@@ -28,8 +28,7 @@ type LightRig = {
   bulbLight: THREE.PointLight;
   bulbMaterial: THREE.MeshStandardMaterial;
   glowMaterial: THREE.SpriteMaterial;
-  beamMaterial: THREE.MeshBasicMaterial;
-  beam: THREE.Mesh;
+  undersideMaterial: THREE.MeshStandardMaterial;
 };
 
 type LightingSettings = {
@@ -101,6 +100,7 @@ export function MorsLightExperience() {
   const resetMotionRef = useRef<(() => void) | null>(null);
   const [concept, setConcept] = useState<keyof typeof CONCEPTS>("Space");
   const [lighting, setLighting] = useState<LightingSettings>(INITIAL_LIGHT);
+  const lightingRef = useRef(lighting);
   const [htmlCanvasReady, setHtmlCanvasReady] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
@@ -145,9 +145,15 @@ export function MorsLightExperience() {
     let pullPointerId = -1;
     let lastPointerTime = 0;
     let pullStrength = 0;
+    let beamPointerId = -1;
+    let beamStartX = 0;
+    let beamStartY = 0;
+    let beamStartAngle = INITIAL_LIGHT.angle;
+    let beamDragged = false;
 
     const fixedStep = 1 / 120;
-    const ropeLength = 1.62;
+    const ropeLength = 1.22;
+    const pageTopToAnchor = 1.18;
     const gravity = new THREE.Vector3(0, -9.81, 0);
     const anchor = new THREE.Vector3(0, 4.72, 1.18);
     const position = new THREE.Vector3(0.16, anchor.y - ropeLength, anchor.z + 0.08);
@@ -266,10 +272,10 @@ export function MorsLightExperience() {
     const shadeProfile = [
       new THREE.Vector2(0.08, 0.08),
       new THREE.Vector2(0.18, 0.02),
-      new THREE.Vector2(0.43, -0.16),
-      new THREE.Vector2(0.82, -0.39),
-      new THREE.Vector2(1.08, -0.54),
-      new THREE.Vector2(1.1, -0.6),
+      new THREE.Vector2(0.43, -0.1),
+      new THREE.Vector2(0.82, -0.25),
+      new THREE.Vector2(1.08, -0.36),
+      new THREE.Vector2(1.1, -0.41),
     ];
     const shadeMaterial = new THREE.MeshStandardMaterial({
       color: 0x101116,
@@ -285,26 +291,26 @@ export function MorsLightExperience() {
       new THREE.MeshStandardMaterial({ color: 0x17191f, roughness: 0.28, metalness: 0.82 }),
     );
     rim.rotation.x = Math.PI / 2;
-    rim.position.y = -0.585;
+    rim.position.y = -0.397;
     shadeGroup.add(rim);
 
     const undersideMaterial = new THREE.MeshStandardMaterial({
-      color: 0x5f462c,
-      emissive: 0xff9f52,
+      color: new THREE.Color(INITIAL_LIGHT.color).multiplyScalar(0.18),
+      emissive: INITIAL_LIGHT.color,
       emissiveIntensity: 0.42,
       roughness: 0.92,
       side: THREE.DoubleSide,
     });
     const underside = new THREE.Mesh(new THREE.CircleGeometry(1.055, 64), undersideMaterial);
     underside.rotation.x = Math.PI / 2;
-    underside.position.y = -0.572;
+    underside.position.y = -0.385;
     shadeGroup.add(underside);
 
     const connector = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.095, 0.12, 0.24, 24),
+      new THREE.CylinderGeometry(0.095, 0.12, 0.2, 24),
       new THREE.MeshStandardMaterial({ color: 0x9c6744, roughness: 0.44, metalness: 0.66 }),
     );
-    connector.position.y = 0.1;
+    connector.position.y = 0.08;
     shadeGroup.add(connector);
 
     const bulbMaterial = new THREE.MeshStandardMaterial({
@@ -314,8 +320,8 @@ export function MorsLightExperience() {
       roughness: 0.2,
     });
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 24, 16), bulbMaterial);
-    bulb.scale.y = 1.42;
-    bulb.position.y = -0.48;
+    bulb.scale.y = 1.2;
+    bulb.position.y = -0.33;
     shadeGroup.add(bulb);
 
     const glowTexture = createGlowTexture();
@@ -328,7 +334,7 @@ export function MorsLightExperience() {
       blending: THREE.AdditiveBlending,
     });
     const glow = new THREE.Sprite(glowMaterial);
-    glow.position.y = -0.52;
+    glow.position.y = -0.36;
     glow.scale.set(0.96, 0.96, 0.96);
     shadeGroup.add(glow);
 
@@ -337,33 +343,20 @@ export function MorsLightExperience() {
       1,
       18,
       THREE.MathUtils.degToRad(INITIAL_LIGHT.angle),
-      0.76,
+      0.88,
       2,
     );
     spot.power = INITIAL_LIGHT.brightness;
-    spot.position.set(0, -0.5, 0);
+    spot.position.set(0, -0.35, 0);
     spot.target.position.set(0, -7, 0);
     shadeGroup.add(spot, spot.target);
 
     const bulbLight = new THREE.PointLight(INITIAL_LIGHT.color, 1, 3.2, 2);
     bulbLight.power = 36;
-    bulbLight.position.set(0, -0.5, 0);
+    bulbLight.position.set(0, -0.35, 0);
     shadeGroup.add(bulbLight);
 
-    const beamMaterial = new THREE.MeshBasicMaterial({
-      color: INITIAL_LIGHT.color,
-      transparent: true,
-      opacity: 0.058,
-      side: THREE.BackSide,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const beam = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 48, 1, true), beamMaterial);
-    beam.position.y = -3.4;
-    beam.renderOrder = 2;
-    shadeGroup.add(beam);
-
-    lightRigRef.current = { spot, bulbLight, bulbMaterial, glowMaterial, beamMaterial, beam };
+    lightRigRef.current = { spot, bulbLight, bulbMaterial, glowMaterial, undersideMaterial };
 
     const interactions = new InteractionManager();
     interactions.connect(renderer, camera);
@@ -406,7 +399,7 @@ export function MorsLightExperience() {
       backing.scale.set(pageWidth, pageHeight, 1);
 
       pageGroup.position.y = portrait ? -0.62 : -0.38;
-      anchor.set(0, pageGroup.position.y + pageHeight / 2 + 1.52, portrait ? 1.1 : 1.18);
+      anchor.set(0, pageGroup.position.y + pageHeight / 2 + pageTopToAnchor, portrait ? 1.1 : 1.18);
       ceilingCap.position.copy(anchor).add(new THREE.Vector3(0, 0.08, 0));
 
       if (!pulling) {
@@ -424,7 +417,7 @@ export function MorsLightExperience() {
       const distanceForWidth = fitWidth / (2 * Math.tan(halfFov) * camera.aspect);
       const cameraDistance = Math.max(distanceForHeight, distanceForWidth);
       const cameraDrop = portrait ? 0.78 : 0.62;
-      const upwardTarget = portrait ? 0.52 : 0.68;
+      const upwardTarget = portrait ? -0.04 : 0.06;
       camera.position.set(0, pageGroup.position.y - cameraDrop, cameraDistance);
       camera.lookAt(0, pageGroup.position.y + upwardTarget, 0);
       camera.updateMatrixWorld();
@@ -457,7 +450,7 @@ export function MorsLightExperience() {
     }
 
     function stepPhysics() {
-      velocity.copy(position).sub(previous).multiplyScalar(pulling ? 0.985 : 0.9965);
+      velocity.copy(position).sub(previous).multiplyScalar(pulling ? 0.985 : 0.9948);
       previous.copy(position);
       position.add(velocity).addScaledVector(gravity, fixedStep * fixedStep);
 
@@ -539,6 +532,16 @@ export function MorsLightExperience() {
     }
 
     function onPointerDown(event: PointerEvent) {
+      if (event.button === 2) {
+        beamPointerId = event.pointerId;
+        beamStartX = event.clientX;
+        beamStartY = event.clientY;
+        beamStartAngle = lightingRef.current.angle;
+        beamDragged = false;
+        pageSource.classList.add("is-adjusting-beam");
+        return;
+      }
+      if (event.button !== 0 || beamPointerId !== -1) return;
       if (!updatePointerTarget(event)) return;
 
       pulling = true;
@@ -551,6 +554,17 @@ export function MorsLightExperience() {
     }
 
     function onPointerMove(event: PointerEvent) {
+      if (event.pointerId === beamPointerId) {
+        const movementX = event.clientX - beamStartX;
+        const movementY = event.clientY - beamStartY;
+        if (!beamDragged && Math.hypot(movementX, movementY) >= 4) beamDragged = true;
+        if (beamDragged) {
+          const nextAngle = THREE.MathUtils.clamp(Math.round(beamStartAngle + movementX * 0.14), 16, 58);
+          setLighting((current) => current.angle === nextAngle ? current : { ...current, angle: nextAngle });
+          wake();
+        }
+        return;
+      }
       if (!pulling || event.pointerId !== pullPointerId) return;
       if (!updatePointerTarget(event)) return;
       const now = performance.now();
@@ -563,22 +577,39 @@ export function MorsLightExperience() {
     }
 
     function onPointerUp(event: PointerEvent) {
+      if (event.pointerId === beamPointerId) {
+        const shouldCycleColor = !beamDragged && event.type !== "pointercancel";
+        beamPointerId = -1;
+        beamDragged = false;
+        pageSource.classList.remove("is-adjusting-beam");
+        if (shouldCycleColor) {
+          setLighting((current) => {
+            const currentIndex = COLOR_PRESETS.indexOf(current.color.toLowerCase());
+            const nextColor = COLOR_PRESETS[(currentIndex + 1) % COLOR_PRESETS.length];
+            return { ...current, color: nextColor };
+          });
+        }
+        wake();
+        return;
+      }
       if (!pulling || event.pointerId !== pullPointerId) return;
 
       // Preserve current motion, add pointer momentum, then add a small spring
       // return impulse. A farther pull therefore releases with more energy.
       velocity.copy(position).sub(previous).multiplyScalar(1 / fixedStep);
       temp.copy(position).sub(anchor).normalize();
-      pointerVelocity.addScaledVector(temp, -pointerVelocity.dot(temp)).clampLength(0, 8);
-      velocity.addScaledVector(pointerVelocity, 0.08 + pullStrength * 0.12);
+      pointerVelocity.addScaledVector(temp, -pointerVelocity.dot(temp)).clampLength(0, 6);
+      const pointerTransfer = THREE.MathUtils.lerp(0.055, 0.12, pullStrength);
+      velocity.addScaledVector(pointerVelocity, pointerTransfer);
 
       tempB.copy(anchor).addScaledVector(DOWN, ropeLength).sub(position);
       tempB.addScaledVector(temp, -tempB.dot(temp));
       if (tempB.lengthSq() > 0.0001) {
         tempB.normalize();
-        velocity.addScaledVector(tempB, 0.4 + pullStrength * 2.2);
+        const returnImpulse = THREE.MathUtils.lerp(0.32, 1.6, pullStrength);
+        velocity.addScaledVector(tempB, returnImpulse);
       }
-      velocity.clampLength(0, 6.5);
+      velocity.clampLength(0, 4.25);
       previous.copy(position).addScaledVector(velocity, -fixedStep);
 
       pulling = false;
@@ -597,6 +628,9 @@ export function MorsLightExperience() {
       pointerVelocity.set(0, 0, 0);
       currentLightDirection.copy(BASE_LIGHT_DIRECTION);
       canvas.classList.remove("is-pulling-light");
+      beamPointerId = -1;
+      beamDragged = false;
+      pageSource.classList.remove("is-adjusting-beam");
       wake();
     }
 
@@ -611,8 +645,13 @@ export function MorsLightExperience() {
       wake();
     }
 
+    function onContextMenu(contextEvent: MouseEvent) {
+      contextEvent.preventDefault();
+    }
+
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("dblclick", resetMotion);
+    canvas.addEventListener("contextmenu", onContextMenu);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
@@ -634,6 +673,7 @@ export function MorsLightExperience() {
       cancelAnimationFrame(resizeFrame);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("dblclick", resetMotion);
+      canvas.removeEventListener("contextmenu", onContextMenu);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
@@ -662,8 +702,6 @@ export function MorsLightExperience() {
       (cable.material as THREE.Material).dispose();
       ceilingCap.geometry.dispose();
       (ceilingCap.material as THREE.Material).dispose();
-      beam.geometry.dispose();
-      beamMaterial.dispose();
       glowTexture.dispose();
       glowMaterial.dispose();
       renderer.dispose();
@@ -671,6 +709,7 @@ export function MorsLightExperience() {
   }, [htmlCanvasReady]);
 
   useEffect(() => {
+    lightingRef.current = lighting;
     const rig = lightRigRef.current;
     if (!rig) return;
 
@@ -685,13 +724,9 @@ export function MorsLightExperience() {
     rig.bulbMaterial.emissiveIntensity = lighting.enabled ? 2.4 + lighting.brightness / 850 : 0.04;
     rig.glowMaterial.color.copy(color);
     rig.glowMaterial.opacity = lighting.enabled ? 0.52 + lighting.brightness / 4200 : 0;
-    rig.beamMaterial.color.copy(color);
-    rig.beamMaterial.opacity = lighting.enabled ? 0.025 + lighting.brightness / 42000 : 0;
-
-    const beamLength = 6.8;
-    const beamRadius = Math.tan(THREE.MathUtils.degToRad(lighting.angle)) * beamLength;
-    rig.beam.position.y = -beamLength / 2 - 0.48;
-    rig.beam.scale.set(beamRadius, beamLength, beamRadius);
+    rig.undersideMaterial.color.copy(color).multiplyScalar(0.18);
+    rig.undersideMaterial.emissive.copy(color);
+    rig.undersideMaterial.emissiveIntensity = lighting.enabled ? 0.22 + lighting.brightness / 7250 : 0.03;
 
     const canvas = canvasRef.current as HtmlCanvas | null;
     canvas?.requestPaint?.();
@@ -835,7 +870,7 @@ export function MorsLightExperience() {
             <p>SPACE / META / FIELD / RULE / LATENT</p>
             <div className="drag-instruction">
               <span className="drag-orbit" aria-hidden="true"><i /></span>
-              <div><b>PRESS + PULL THE LIGHT</b><span>Farther builds a stronger 3D release</span></div>
+              <div><b>LMB PULL · RMB LIGHT</b><span>Right-drag beam · Right-click color</span></div>
             </div>
             <p>FOUNDATION FIRST — OPEN SOURCE WHEN READY</p>
           </footer>
