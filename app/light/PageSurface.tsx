@@ -1,5 +1,5 @@
 import type { CSSProperties, Ref } from "react";
-import { INITIAL_LIGHT, type LightingSettings } from "./config";
+import type { LightingSettings } from "./config";
 
 type PageSurfaceProps = {
   lighting: LightingSettings;
@@ -13,7 +13,6 @@ const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export function PageSurface({
   lighting,
-  preview = false,
   sourceRef,
 }: PageSurfaceProps) {
   return (
@@ -33,18 +32,10 @@ export function PageSurface({
   );
 }
 
-const ignoreLightingChange = () => {};
-const ignoreReset = () => {};
-
 export function LightPreview({ hidden = false }: { hidden?: boolean }) {
   return (
     <div className={`scene-preview${hidden ? " is-hidden" : ""}`} aria-hidden="true" inert>
-      <PageSurface
-        lighting={INITIAL_LIGHT}
-        onLightingChange={ignoreLightingChange}
-        onReset={ignoreReset}
-        preview
-      />
+      <div className="preview-placeholder" />
     </div>
   );
 }

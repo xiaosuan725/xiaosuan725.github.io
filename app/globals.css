@@ -77,11 +77,20 @@ body {
   transition: opacity 420ms ease, visibility 0s linear 420ms;
 }
 
-.scene-preview .page-source {
+.scene-preview .page-source,
+.scene-preview .preview-placeholder {
   flex: none;
   transform: scale(0.86);
   transform-origin: center;
   box-shadow: 0 32px 90px rgba(0, 0, 0, 0.58);
+}
+
+.preview-placeholder {
+  width: 1344px;
+  height: 756px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  background: #0a0b12;
 }
 
 .page-source.is-adjusting-beam,
@@ -151,24 +160,28 @@ body {
 }
 
 @media (max-width: 700px) {
-  .scene-preview .page-source {
+  .scene-preview .page-source,
+  .scene-preview .preview-placeholder {
     transform: scale(0.46);
   }
 
-  .page-source {
+  .page-source,
+  .preview-placeholder {
     width: 672px;
     height: 1102px;
   }
 }
 
 @media (min-width: 701px) and (max-width: 1100px) {
-  .scene-preview .page-source {
+  .scene-preview .page-source,
+  .scene-preview .preview-placeholder {
     transform: scale(0.55);
   }
 }
 
 @media (min-width: 1101px) and (max-width: 1399px) {
-  .scene-preview .page-source {
+  .scene-preview .page-source,
+  .scene-preview .preview-placeholder {
     transform: scale(0.72);
   }
 }
