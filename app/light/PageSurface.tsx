@@ -10,8 +10,6 @@ type PageSurfaceProps = {
   sourceRef?: Ref<HTMLDivElement>;
 };
 
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
 export function PageSurface({
   lighting,
   sourceRef,
@@ -25,7 +23,7 @@ export function PageSurface({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className="page-bg"
-        src={`${BASE_PATH}/cat.png`}
+        src="/cat.png"
         alt=""
         draggable={false}
       />

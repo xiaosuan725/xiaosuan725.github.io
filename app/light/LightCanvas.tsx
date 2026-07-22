@@ -323,8 +323,8 @@ export function LightCanvas() {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
 
-      const sourceWidth = pageSource.offsetWidth || 1440;
-      const sourceHeight = pageSource.offsetHeight || 810;
+      const sourceWidth = pageSource.offsetWidth || 1344;
+      const sourceHeight = pageSource.offsetHeight || 756;
       const portrait = height > width * 1.16;
       const pageWidth = portrait ? 7.2 : 12.8;
       const pageHeight = pageWidth * (sourceHeight / sourceWidth);
