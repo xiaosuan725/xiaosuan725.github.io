@@ -344,8 +344,8 @@ export function LightCanvas() {
         previous.copy(position);
       }
 
-      const fitHeight = pageHeight * 1.35;
-      const fitWidth = pageWidth * 1.35;
+      const fitHeight = pageHeight + 1.1;
+      const fitWidth = pageWidth + 0.6;
       const halfFov = THREE.MathUtils.degToRad(camera.fov * 0.5);
       const distanceForHeight = fitHeight / (2 * Math.tan(halfFov));
       const distanceForWidth = fitWidth / (2 * Math.tan(halfFov) * camera.aspect);

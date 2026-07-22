@@ -92,8 +92,8 @@ body {
 .page-source {
   --lamp-color: #ffb36b;
   position: relative;
-  width: 1440px;
-  height: 810px;
+  width: 1344px;
+  height: 756px;
   overflow: hidden;
   background: #0a0b12;
   user-select: none;
@@ -156,8 +156,8 @@ body {
   }
 
   .page-source {
-    width: 720px;
-    height: 1180px;
+    width: 672px;
+    height: 1102px;
   }
 }
 
