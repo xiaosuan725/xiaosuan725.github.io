@@ -1,5 +1,6 @@
 import type { CSSProperties, Ref } from "react";
 import type { LightingSettings } from "./config";
+import { FloatingText } from "./FloatingText";
 
 type PageSurfaceProps = {
   lighting: LightingSettings;
@@ -28,6 +29,7 @@ export function PageSurface({
         alt=""
         draggable={false}
       />
+      <FloatingText />
     </div>
   );
 }
