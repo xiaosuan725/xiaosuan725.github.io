@@ -11,6 +11,13 @@ const PHRASES = [
   "一切都失去了意义", "快乐", "谁来救救我", "痛苦",
 ];
 
+// Fine-tune individual phrase positions (delta in % of page size).
+// Positive deltaY = move down, negative = move up.
+const ADJUST: Record<string, { dx?: number; dy?: number }> = {
+  "曾经": { dy: -8 },
+  "健康": { dy: 6 },
+};
+
 interface Fragment {
   text: string;
   x: number;
@@ -135,6 +142,13 @@ function generateFragments(): Fragment[] {
       skewX: (rng2() - 0.5) * 3.5,
       skewY: (rng2() - 0.5) * 2,
     });
+  }
+
+  // Apply per-phrase adjustments from config
+  for (const f of fragments) {
+    const adj = ADJUST[f.text];
+    if (adj?.dx != null) f.x = Math.max(4, Math.min(96, f.x + adj.dx));
+    if (adj?.dy != null) f.y = Math.max(4, Math.min(96, f.y + adj.dy));
   }
 
   return fragments;
