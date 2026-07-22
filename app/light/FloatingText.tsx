@@ -38,50 +38,41 @@ function seedRandom(seed: number) {
 function buildSlots(): { cx: number; cy: number }[] {
   const slots: { cx: number; cy: number }[] = [];
 
-  // --- Row 1: top area, few sparse items ---
-  slots.push({ cx: 20, cy: 6 });
-  slots.push({ cx: 50, cy: 5 });
-  slots.push({ cx: 80, cy: 7 });
+  // Hand-placed for organic distribution. Minimum ~12% between neighbors.
 
-  // --- Row 2: upper-mid ---
-  slots.push({ cx: 12, cy: 16 });
-  slots.push({ cx: 40, cy: 14 });
-  slots.push({ cx: 62, cy: 15 });
-  slots.push({ cx: 88, cy: 17 });
+  // --- Top cluster ---
+  slots.push({ cx: 15, cy: 5 });  slots.push({ cx: 42, cy: 4 });
+  slots.push({ cx: 72, cy: 6 });  slots.push({ cx: 90, cy: 8 });
 
-  // --- Row 3: above cat zone ---
-  slots.push({ cx: 8, cy: 26 });
-  slots.push({ cx: 28, cy: 24 });
-  slots.push({ cx: 72, cy: 24 });
-  slots.push({ cx: 92, cy: 27 });
+  // --- Upper-left cluster ---
+  slots.push({ cx: 8, cy: 17 });  slots.push({ cx: 30, cy: 16 });
 
-  // --- Row 4: just above cat ---
-  slots.push({ cx: 6, cy: 35 });
-  slots.push({ cx: 24, cy: 37 });
-  slots.push({ cx: 45, cy: 36 });
-  slots.push({ cx: 55, cy: 37 });
-  slots.push({ cx: 76, cy: 35 });
-  slots.push({ cx: 94, cy: 36 });
+  // --- Upper-right ---
+  slots.push({ cx: 68, cy: 15 }); slots.push({ cx: 88, cy: 18 });
 
-  // --- Left side of cat ---
-  slots.push({ cx: 5, cy: 50 });
-  slots.push({ cx: 18, cy: 52 });
-  slots.push({ cx: 5, cy: 63 });
-  slots.push({ cx: 16, cy: 65 });
+  // --- Mid-left ---
+  slots.push({ cx: 6, cy: 28 });  slots.push({ cx: 25, cy: 30 });
+  slots.push({ cx: 48, cy: 27 });
 
-  // --- Right side of cat ---
-  slots.push({ cx: 95, cy: 50 });
-  slots.push({ cx: 82, cy: 53 });
-  slots.push({ cx: 95, cy: 64 });
-  slots.push({ cx: 84, cy: 66 });
+  // --- Mid-right ---
+  slots.push({ cx: 73, cy: 28 }); slots.push({ cx: 93, cy: 26 });
 
-  // --- Bottom-left corner ---
-  slots.push({ cx: 8, cy: 80 });
-  slots.push({ cx: 22, cy: 82 });
+  // --- Just above cat ---
+  slots.push({ cx: 16, cy: 39 }); slots.push({ cx: 38, cy: 40 });
+  slots.push({ cx: 60, cy: 38 }); slots.push({ cx: 82, cy: 40 });
 
-  // --- Bottom-right corner ---
-  slots.push({ cx: 92, cy: 80 });
-  slots.push({ cx: 78, cy: 83 });
+  // --- Left of cat ---
+  slots.push({ cx: 8, cy: 53 });  slots.push({ cx: 22, cy: 58 });
+
+  // --- Right of cat ---
+  slots.push({ cx: 80, cy: 55 }); slots.push({ cx: 92, cy: 60 });
+
+  // --- Bottom corners ---
+  slots.push({ cx: 10, cy: 76 }); slots.push({ cx: 28, cy: 78 });
+  slots.push({ cx: 88, cy: 75 }); slots.push({ cx: 74, cy: 80 });
+
+  // --- Bottom far ---
+  slots.push({ cx: 16, cy: 90 }); slots.push({ cx: 84, cy: 91 });
 
   return slots;
 }
@@ -111,18 +102,31 @@ function generateFragments(): Fragment[] {
     const slot = slots[i];
     const rng2 = seedRandom(i * 137 + 99);
 
-    const jitterX = (rng2() - 0.5) * 3;
-    const jitterY = (rng2() - 0.5) * 2.5;
+    const jitterX = (rng2() - 0.5) * 2;
+    const jitterY = (rng2() - 0.5) * 1.5;
 
     const isLong = picked[i].length > 4;
     const size = isLong ? 22 + rng2() * 22 : 28 + rng2() * 34;
+
+    // Clamp position to avoid overflow off the page-source.
+    // Long text needs more right-side padding (text renders rightward from x).
+    const charCount = picked[i].length;
+    const estimatedWidthPercent = (charCount * size) / 13.44; // 1344px = 100%
+    const padLeft = 4 + size / 18;
+    const padRight = Math.max(padLeft, 4 + estimatedWidthPercent * 1.1);
+    const padY = 4 + size / 12;
+    const rawX = slot.cx + jitterX;
+    const rawY = slot.cy + jitterY;
+    const x = Math.max(padLeft, Math.min(100 - padRight, rawX));
+    const y = Math.max(padY, Math.min(100 - padY, rawY));
+
     const opacity = 0.15 + rng2() * 0.28;
     const blur = rng2() * 0.45;
 
     fragments.push({
       text: picked[i],
-      x: slot.cx + jitterX,
-      y: slot.cy + jitterY,
+      x,
+      y,
       size,
       opacity,
       blur,
