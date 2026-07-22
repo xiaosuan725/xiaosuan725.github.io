@@ -6,10 +6,9 @@ import { InteractionManager } from "three/addons/interaction/InteractionManager.
 import {
   COLOR_PRESETS,
   INITIAL_LIGHT,
-  type Concept,
   type LightingSettings,
 } from "./config";
-import { MorsLightPreview, MorsPageSurface } from "./MorsPageSurface";
+import { LightPreview, PageSurface } from "./PageSurface";
 import {
   installThreeHtmlTextureCompatibility,
   type HtmlCanvas,
@@ -27,14 +26,13 @@ const DOWN = new THREE.Vector3(0, -1, 0);
 const UP = new THREE.Vector3(0, 1, 0);
 const BASE_LIGHT_DIRECTION = DOWN.clone();
 
-export function MorsLightCanvas() {
+export function LightCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pageSourceRef = useRef<HTMLDivElement>(null);
   const lightRigRef = useRef<LightRig | null>(null);
   const activeColorRef = useRef(new THREE.Color());
   const wakeRef = useRef<(() => void) | null>(null);
   const resetMotionRef = useRef<(() => void) | null>(null);
-  const [concept, setConcept] = useState<Concept>("Space");
   const [lighting, setLighting] = useState<LightingSettings>(INITIAL_LIGHT);
   const lightingRef = useRef(lighting);
   const [htmlCanvasReady, setHtmlCanvasReady] = useState(false);
@@ -126,7 +124,7 @@ export function MorsLightCanvas() {
       console.error(rendererError);
       const errorTimer = window.setTimeout(() => {
         if (!disposed) {
-          setError("This experience needs WebGL to render the MORS² light study.");
+          setError("This experience needs WebGL to render the light study.");
         }
       }, 0);
       return () => {
@@ -159,9 +157,9 @@ export function MorsLightCanvas() {
     const pageGeometry = new THREE.PlaneGeometry(1, 1, 1, 1);
     const pageMaterial = new THREE.MeshStandardMaterial({
       map: pageTexture,
-      color: 0xc5cad4,
-      roughness: 0.96,
-      metalness: 0,
+      color: 0xffffff,
+      roughness: 0.55,
+      metalness: 0.04,
       transparent: true,
       alphaTest: 0.005,
       side: THREE.FrontSide,
@@ -346,8 +344,8 @@ export function MorsLightCanvas() {
         previous.copy(position);
       }
 
-      const fitHeight = pageHeight + 3.1;
-      const fitWidth = pageWidth + 1.25;
+      const fitHeight = pageHeight * 1.35;
+      const fitWidth = pageWidth * 1.35;
       const halfFov = THREE.MathUtils.degToRad(camera.fov * 0.5);
       const distanceForHeight = fitHeight / (2 * Math.tan(halfFov));
       const distanceForWidth = fitWidth / (2 * Math.tan(halfFov) * camera.aspect);
@@ -381,7 +379,6 @@ export function MorsLightCanvas() {
       lampQuaternion.setFromUnitVectors(DOWN, currentLightDirection);
       lampRoot.position.copy(position);
       lampRoot.quaternion.copy(lampQuaternion);
-
     }
 
     function stepPhysics() {
@@ -390,8 +387,6 @@ export function MorsLightCanvas() {
       position.add(velocity).addScaledVector(gravity, fixedStep * fixedStep);
 
       if (pulling) {
-        // The pointer defines a 3D equilibrium direction. Distance controls how
-        // much of that direction is applied, like stretching an invisible spring.
         tempB.copy(aimTarget).sub(anchor).normalize();
         tempB.lerp(DOWN, 1 - pullStrength * 0.82).normalize();
         tempC.copy(tempB).multiplyScalar(ropeLength).add(anchor).sub(position);
@@ -529,8 +524,6 @@ export function MorsLightCanvas() {
       }
       if (!pulling || event.pointerId !== pullPointerId) return;
 
-      // Preserve current motion, add pointer momentum, then add a small spring
-      // return impulse. A farther pull therefore releases with more energy.
       velocity.copy(position).sub(previous).multiplyScalar(1 / fixedStep);
       temp.copy(position).sub(anchor).normalize();
       pointerVelocity.addScaledVector(temp, -pointerVelocity.dot(temp)).clampLength(0, 6);
@@ -680,21 +673,19 @@ export function MorsLightCanvas() {
   return (
     <main
       className={`experience-shell${ready ? " is-ready" : ""}`}
-      aria-label="Interactive MORS² light study"
+      aria-label="Interactive light study"
       aria-busy={!ready && !error}
     >
-      <canvas ref={canvasRef} className="webgl-canvas" aria-label="Interactive MORS² light study">
-        <MorsPageSurface
+      <canvas ref={canvasRef} className="webgl-canvas" aria-label="Interactive light study">
+        <PageSurface
           sourceRef={pageSourceRef}
-          concept={concept}
           lighting={lighting}
-          onConceptChange={setConcept}
           onLightingChange={updateLighting}
           onReset={resetLight}
         />
       </canvas>
 
-      <MorsLightPreview hidden={ready || Boolean(error)} />
+      <LightPreview hidden={ready || Boolean(error)} />
       <div className={`scene-status${ready || error ? " is-hidden" : ""}`} aria-live="polite">
         <span /> PREPARING HTML SURFACE
       </div>
