@@ -13,7 +13,8 @@ import {
   installThreeHtmlTextureCompatibility,
   type HtmlCanvas,
 } from "./three-html-compatibility";
-import { VideoModal, getBvId } from "./VideoModal";
+import { VideoModal } from "./VideoModal";
+import { getBvId } from "./phrases";
 
 type LightRig = {
   spot: THREE.SpotLight;

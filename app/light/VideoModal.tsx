@@ -1,17 +1,10 @@
 "use client";
 
+import { getBvId } from "./phrases";
+
 interface Props {
   phrase: string;
   onClose: () => void;
-}
-
-// TODO: add actual bilibili BV ids for each phrase
-const BVID_MAP: Record<string, string> = {
-  "健康": 'BV1ZE411r7tq'
-};
-
-export function getBvId(phrase: string): string {
-  return BVID_MAP[phrase] ?? "";
 }
 
 function getEmbedUrl(bvid: string) {

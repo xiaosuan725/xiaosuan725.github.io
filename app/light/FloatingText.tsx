@@ -1,25 +1,8 @@
 import { useMemo } from "react";
-
-const PHRASES = [
-  "离开", "劳累", "你就是装的", "害怕", "帮助", "控制不住情绪",
-  "无病呻吟", "健康", "曾经", "关爱", "对不起", "好好活下去",
-  "严重", "治疗", "我也是", "可以被治愈的", "你很好", "安慰",
-  "想开点", "会好起来的", "死", "弄虚作假", "理解", "哭",
-  "忍耐", "别矫情，你好着呢", "药", "微笑", "心理承受能力差",
-  "阳光", "加油", "孤独", "我没事", "乐观", "幸福", "装",
-  "你很懂吗", "你怎么还不去死", "我想逃", "勇敢",
-  "一切都失去了意义", "快乐", "谁来救救我", "痛苦",
-];
-
-// Fine-tune individual phrase positions (delta in % of page size).
-// Positive deltaY = move down, negative = move up.
-const ADJUST: Record<string, { dx?: number; dy?: number }> = {
-  "曾经": { dy: -8 },
-  "健康": { dy: 6 },
-};
+import { PHRASES, type PhraseData } from "./phrases";
 
 interface Fragment {
-  text: string;
+  data: PhraseData;
   x: number;
   y: number;
   size: number;
@@ -80,76 +63,68 @@ function buildSlots(): { cx: number; cy: number }[] {
   return slots;
 }
 
+function generateFragments(): Fragment[] {
+  const rng = seedRandom(42);
+  const slots = buildSlots();
+
+  for (let i = slots.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [slots[i], slots[j]] = [slots[j], slots[i]];
+  }
+
+  const picked = PHRASES.slice(0, slots.length);
+  const fragments: Fragment[] = [];
+
+  for (let i = 0; i < picked.length; i++) {
+    const slot = slots[i];
+    const rng2 = seedRandom(i * 137 + 99);
+
+    const jitterX = (rng2() - 0.5) * 2;
+    const jitterY = (rng2() - 0.5) * 1.5;
+
+    const isLong = picked[i].text.length > 4;
+    const size = isLong ? 22 + rng2() * 22 : 28 + rng2() * 34;
+
+    const charCount = picked[i].text.length;
+    const estimatedWidthPercent = (charCount * size) / 13.44;
+    const padLeft = 4 + size / 18;
+    const padRight = Math.max(padLeft, 4 + estimatedWidthPercent * 1.1);
+    const padY = 4 + size / 12;
+    const rawX = slot.cx + jitterX;
+    const rawY = slot.cy + jitterY;
+    const x = Math.max(padLeft, Math.min(100 - padRight, rawX));
+    const y = Math.max(padY, Math.min(100 - padY, rawY));
+
+    // Apply per-phrase position adjustments
+    const adjX = x + (picked[i].dx ?? 0);
+    const adjY = y + (picked[i].dy ?? 0);
+
+    const opacity = 0.15 + rng2() * 0.28;
+    const blur = rng2() * 0.45;
+
+    fragments.push({
+      data: picked[i],
+      x: Math.max(4, Math.min(96, adjX)),
+      y: Math.max(4, Math.min(96, adjY)),
+      size,
+      opacity,
+      blur,
+      offsetX: (rng2() - 0.5) * 2,
+      offsetY: (rng2() - 0.5) * 1.5,
+      skewX: (rng2() - 0.5) * 3.5,
+      skewY: (rng2() - 0.5) * 2,
+    });
+  }
+
+  return fragments;
+}
+
 interface Props {
   onPhraseClick?: (text: string) => void;
 }
 
 export function FloatingText({ onPhraseClick }: Props) {
-  const fragments = useMemo(() => {
-    const rng = seedRandom(42);
-    const slots = buildSlots();
-
-    for (let i = slots.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [slots[i], slots[j]] = [slots[j], slots[i]];
-    }
-
-    const fragments: Fragment[] = [];
-    const used = new Set<string>();
-    const picked: string[] = [];
-
-    for (const phrase of PHRASES) {
-      if (used.has(phrase)) continue;
-      used.add(phrase);
-      picked.push(phrase);
-      if (picked.length >= slots.length) break;
-    }
-
-    for (let i = 0; i < picked.length; i++) {
-      const slot = slots[i];
-      const rng2 = seedRandom(i * 137 + 99);
-
-      const jitterX = (rng2() - 0.5) * 2;
-      const jitterY = (rng2() - 0.5) * 1.5;
-
-      const isLong = picked[i].length > 4;
-      const size = isLong ? 22 + rng2() * 22 : 28 + rng2() * 34;
-
-      const charCount = picked[i].length;
-      const estimatedWidthPercent = (charCount * size) / 13.44;
-      const padLeft = 4 + size / 18;
-      const padRight = Math.max(padLeft, 4 + estimatedWidthPercent * 1.1);
-      const padY = 4 + size / 12;
-      const rawX = slot.cx + jitterX;
-      const rawY = slot.cy + jitterY;
-      const x = Math.max(padLeft, Math.min(100 - padRight, rawX));
-      const y = Math.max(padY, Math.min(100 - padY, rawY));
-
-      const opacity = 0.15 + rng2() * 0.28;
-      const blur = rng2() * 0.45;
-
-      fragments.push({
-        text: picked[i],
-        x,
-        y,
-        size,
-        opacity,
-        blur,
-        offsetX: (rng2() - 0.5) * 2,
-        offsetY: (rng2() - 0.5) * 1.5,
-        skewX: (rng2() - 0.5) * 3.5,
-        skewY: (rng2() - 0.5) * 2,
-      });
-    }
-
-    for (const f of fragments) {
-      const adj = ADJUST[f.text];
-      if (adj?.dx != null) f.x = Math.max(4, Math.min(96, f.x + adj.dx));
-      if (adj?.dy != null) f.y = Math.max(4, Math.min(96, f.y + adj.dy));
-    }
-
-    return fragments;
-  }, []);
+  const fragments = useMemo(() => generateFragments(), []);
 
   return (
     <div className="floating-text-layer" aria-hidden="true">
@@ -165,9 +140,9 @@ export function FloatingText({ onPhraseClick }: Props) {
             filter: f.blur > 0.35 ? `blur(${f.blur}px)` : undefined,
             transform: `translate(${f.offsetX}px, ${f.offsetY}px) skew(${f.skewX}deg, ${f.skewY}deg)`,
           }}
-          onClick={() => onPhraseClick?.(f.text)}
+          onClick={() => onPhraseClick?.(f.data.text)}
         >
-          {f.text}
+          {f.data.text}
         </span>
       ))}
     </div>
