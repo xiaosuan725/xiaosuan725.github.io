@@ -8,7 +8,7 @@ import {
   INITIAL_LIGHT,
   type LightingSettings,
 } from "./config";
-import { LightPreview, PageSurface } from "./PageSurface";
+import { PageSurface } from "./PageSurface";
 import {
   installThreeHtmlTextureCompatibility,
   type HtmlCanvas,
@@ -328,14 +328,13 @@ export function LightCanvas() {
 
       const sourceWidth = pageSource.offsetWidth || 1344;
       const sourceHeight = pageSource.offsetHeight || 756;
-      const portrait = height > width * 1.16;
-      const pageWidth = portrait ? 7.2 : 12.8;
+      const pageWidth = 12.8;
       const pageHeight = pageWidth * (sourceHeight / sourceWidth);
       pageMesh.scale.set(pageWidth, pageHeight, 1);
       backing.scale.set(pageWidth, pageHeight, 1);
 
-      pageGroup.position.y = portrait ? -0.62 : -0.38;
-      anchor.set(0, pageGroup.position.y + pageHeight / 2 + pageTopToAnchor, portrait ? 1.1 : 1.18);
+      pageGroup.position.y = -0.38;
+      anchor.set(0, pageGroup.position.y + pageHeight / 2 + pageTopToAnchor, 1.18);
       ceilingCap.position.copy(anchor);
       ceilingCap.position.y += 0.08;
 
@@ -353,10 +352,8 @@ export function LightCanvas() {
       const distanceForHeight = fitHeight / (2 * Math.tan(halfFov));
       const distanceForWidth = fitWidth / (2 * Math.tan(halfFov) * camera.aspect);
       const cameraDistance = Math.max(distanceForHeight, distanceForWidth);
-      const cameraDrop = portrait ? 0.78 : 0.62;
-      const upwardTarget = portrait ? -0.04 : 0.06;
-      camera.position.set(0, pageGroup.position.y - cameraDrop, cameraDistance);
-      camera.lookAt(0, pageGroup.position.y + upwardTarget, 0);
+      camera.position.set(0, pageGroup.position.y - 0.62, cameraDistance);
+      camera.lookAt(0, pageGroup.position.y + 0.06, 0);
       camera.updateMatrixWorld();
       interactions.update();
       canvas.requestPaint?.();
@@ -698,10 +695,6 @@ export function LightCanvas() {
         />
       </canvas>
 
-      <LightPreview hidden={ready || Boolean(error)} />
-      <div className={`scene-status${ready || error ? " is-hidden" : ""}`} aria-live="polite">
-        <span /> PREPARING HTML SURFACE
-      </div>
       {error ? <div className="scene-error">{error}</div> : null}
     </main>
     {modalPhrase && (
