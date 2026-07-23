@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HTML Light Demo",
+  title: "微光",
   description: "An interactive HTML-in-Canvas lighting experiment.",
 };
 

@@ -8,11 +8,13 @@ type PageSurfaceProps = {
   onReset: () => void;
   preview?: boolean;
   sourceRef?: Ref<HTMLDivElement>;
+  onPhraseClick?: (text: string) => void;
 };
 
 export function PageSurface({
   lighting,
   sourceRef,
+  onPhraseClick,
 }: PageSurfaceProps) {
   return (
     <div
@@ -27,7 +29,7 @@ export function PageSurface({
         alt=""
         draggable={false}
       />
-      <FloatingText />
+      <FloatingText onPhraseClick={onPhraseClick} />
     </div>
   );
 }

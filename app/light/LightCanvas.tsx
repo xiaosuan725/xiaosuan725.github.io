@@ -13,6 +13,7 @@ import {
   installThreeHtmlTextureCompatibility,
   type HtmlCanvas,
 } from "./three-html-compatibility";
+import { VideoModal, getBvId } from "./VideoModal";
 
 type LightRig = {
   spot: THREE.SpotLight;
@@ -38,6 +39,7 @@ export function LightCanvas() {
   const [htmlCanvasReady, setHtmlCanvasReady] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
+  const [modalPhrase, setModalPhrase] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -665,23 +667,33 @@ export function LightCanvas() {
     setLighting((current) => ({ ...current, ...patch }));
   }
 
+  function handlePhraseClick(text: string) {
+    if (getBvId(text)) setModalPhrase(text);
+  }
+
   function resetLight() {
     setLighting(INITIAL_LIGHT);
     resetMotionRef.current?.();
   }
 
   return (
-    <main
-      className={`experience-shell${ready ? " is-ready" : ""}`}
-      aria-label="Interactive light study"
-      aria-busy={!ready && !error}
-    >
-      <canvas ref={canvasRef} className="webgl-canvas" aria-label="Interactive light study">
+    <>
+      <main
+        className={`experience-shell${ready ? " is-ready" : ""}`}
+        aria-label="Interactive light study"
+        aria-busy={!ready && !error}
+      >
+      <canvas
+        ref={canvasRef}
+        className={`webgl-canvas${modalPhrase ? " is-frozen" : ""}`}
+        aria-label="Interactive light study"
+      >
         <PageSurface
           sourceRef={pageSourceRef}
           lighting={lighting}
           onLightingChange={updateLighting}
           onReset={resetLight}
+          onPhraseClick={handlePhraseClick}
         />
       </canvas>
 
@@ -691,5 +703,9 @@ export function LightCanvas() {
       </div>
       {error ? <div className="scene-error">{error}</div> : null}
     </main>
+    {modalPhrase && (
+        <VideoModal phrase={modalPhrase} onClose={() => setModalPhrase(null)} />
+      )}
+    </>
   );
 }

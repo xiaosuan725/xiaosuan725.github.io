@@ -39,13 +39,9 @@ function seedRandom(seed: number) {
   };
 }
 
-// Cat at bottom-center (x: 33-66%, y: 45-100%).
-// Text only above and on the sides, NOT below the cat.
-// Each slot has explicit x/y % and gets exactly one phrase.
+// Hand-placed for organic distribution. Minimum ~12% between neighbors.
 function buildSlots(): { cx: number; cy: number }[] {
   const slots: { cx: number; cy: number }[] = [];
-
-  // Hand-placed for organic distribution. Minimum ~12% between neighbors.
 
   // --- Top cluster ---
   slots.push({ cx: 15, cy: 5 });  slots.push({ cx: 42, cy: 4 });
@@ -84,78 +80,76 @@ function buildSlots(): { cx: number; cy: number }[] {
   return slots;
 }
 
-function generateFragments(): Fragment[] {
-  const rng = seedRandom(42);
-  const slots = buildSlots();
-
-  // Shuffle
-  for (let i = slots.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [slots[i], slots[j]] = [slots[j], slots[i]];
-  }
-
-  const fragments: Fragment[] = [];
-  const used = new Set<string>();
-  const picked: string[] = [];
-
-  for (const phrase of PHRASES) {
-    if (used.has(phrase)) continue;
-    used.add(phrase);
-    picked.push(phrase);
-    if (picked.length >= slots.length) break;
-  }
-
-  for (let i = 0; i < picked.length; i++) {
-    const slot = slots[i];
-    const rng2 = seedRandom(i * 137 + 99);
-
-    const jitterX = (rng2() - 0.5) * 2;
-    const jitterY = (rng2() - 0.5) * 1.5;
-
-    const isLong = picked[i].length > 4;
-    const size = isLong ? 22 + rng2() * 22 : 28 + rng2() * 34;
-
-    // Clamp position to avoid overflow off the page-source.
-    // Long text needs more right-side padding (text renders rightward from x).
-    const charCount = picked[i].length;
-    const estimatedWidthPercent = (charCount * size) / 13.44; // 1344px = 100%
-    const padLeft = 4 + size / 18;
-    const padRight = Math.max(padLeft, 4 + estimatedWidthPercent * 1.1);
-    const padY = 4 + size / 12;
-    const rawX = slot.cx + jitterX;
-    const rawY = slot.cy + jitterY;
-    const x = Math.max(padLeft, Math.min(100 - padRight, rawX));
-    const y = Math.max(padY, Math.min(100 - padY, rawY));
-
-    const opacity = 0.15 + rng2() * 0.28;
-    const blur = rng2() * 0.45;
-
-    fragments.push({
-      text: picked[i],
-      x,
-      y,
-      size,
-      opacity,
-      blur,
-      offsetX: (rng2() - 0.5) * 2,
-      offsetY: (rng2() - 0.5) * 1.5,
-      skewX: (rng2() - 0.5) * 3.5,
-      skewY: (rng2() - 0.5) * 2,
-    });
-  }
-
-  // Apply per-phrase adjustments from config
-  for (const f of fragments) {
-    const adj = ADJUST[f.text];
-    if (adj?.dx != null) f.x = Math.max(4, Math.min(96, f.x + adj.dx));
-    if (adj?.dy != null) f.y = Math.max(4, Math.min(96, f.y + adj.dy));
-  }
-
-  return fragments;
+interface Props {
+  onPhraseClick?: (text: string) => void;
 }
 
-export function FloatingText() {
-  const fragments = useMemo(() => generateFragments(), []);
+export function FloatingText({ onPhraseClick }: Props) {
+  const fragments = useMemo(() => {
+    const rng = seedRandom(42);
+    const slots = buildSlots();
+
+    for (let i = slots.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [slots[i], slots[j]] = [slots[j], slots[i]];
+    }
+
+    const fragments: Fragment[] = [];
+    const used = new Set<string>();
+    const picked: string[] = [];
+
+    for (const phrase of PHRASES) {
+      if (used.has(phrase)) continue;
+      used.add(phrase);
+      picked.push(phrase);
+      if (picked.length >= slots.length) break;
+    }
+
+    for (let i = 0; i < picked.length; i++) {
+      const slot = slots[i];
+      const rng2 = seedRandom(i * 137 + 99);
+
+      const jitterX = (rng2() - 0.5) * 2;
+      const jitterY = (rng2() - 0.5) * 1.5;
+
+      const isLong = picked[i].length > 4;
+      const size = isLong ? 22 + rng2() * 22 : 28 + rng2() * 34;
+
+      const charCount = picked[i].length;
+      const estimatedWidthPercent = (charCount * size) / 13.44;
+      const padLeft = 4 + size / 18;
+      const padRight = Math.max(padLeft, 4 + estimatedWidthPercent * 1.1);
+      const padY = 4 + size / 12;
+      const rawX = slot.cx + jitterX;
+      const rawY = slot.cy + jitterY;
+      const x = Math.max(padLeft, Math.min(100 - padRight, rawX));
+      const y = Math.max(padY, Math.min(100 - padY, rawY));
+
+      const opacity = 0.15 + rng2() * 0.28;
+      const blur = rng2() * 0.45;
+
+      fragments.push({
+        text: picked[i],
+        x,
+        y,
+        size,
+        opacity,
+        blur,
+        offsetX: (rng2() - 0.5) * 2,
+        offsetY: (rng2() - 0.5) * 1.5,
+        skewX: (rng2() - 0.5) * 3.5,
+        skewY: (rng2() - 0.5) * 2,
+      });
+    }
+
+    for (const f of fragments) {
+      const adj = ADJUST[f.text];
+      if (adj?.dx != null) f.x = Math.max(4, Math.min(96, f.x + adj.dx));
+      if (adj?.dy != null) f.y = Math.max(4, Math.min(96, f.y + adj.dy));
+    }
+
+    return fragments;
+  }, []);
 
   return (
     <div className="floating-text-layer" aria-hidden="true">
@@ -171,6 +165,7 @@ export function FloatingText() {
             filter: f.blur > 0.35 ? `blur(${f.blur}px)` : undefined,
             transform: `translate(${f.offsetX}px, ${f.offsetY}px) skew(${f.skewX}deg, ${f.skewY}deg)`,
           }}
+          onClick={() => onPhraseClick?.(f.text)}
         >
           {f.text}
         </span>
