@@ -1,5 +1,11 @@
 import { useMemo } from "react";
 import { PHRASES, type PhraseData } from "./phrases";
+import type { HtmlCanvas } from "./three-html-compatibility";
+
+function triggerRepaint(e: React.MouseEvent) {
+  const canvas = (e.target as HTMLElement).closest("canvas") as HtmlCanvas | null;
+  canvas?.requestPaint?.();
+}
 
 interface Fragment {
   data: PhraseData;
@@ -141,6 +147,8 @@ export function FloatingText({ onPhraseClick }: Props) {
             transform: `translate(${f.offsetX}px, ${f.offsetY}px) skew(${f.skewX}deg, ${f.skewY}deg)`,
           }}
           onClick={() => onPhraseClick?.(f.data.text)}
+          onMouseEnter={triggerRepaint}
+          onMouseLeave={triggerRepaint}
         >
           {f.data.text}
         </span>
