@@ -8,7 +8,7 @@ interface Props {
 }
 
 function getEmbedUrl(bvid: string) {
-  return `//player.bilibili.com/player.html?isOutside=true&bvid=${bvid}&page=1&autoplay=0`;
+  return `https://player.bilibili.com/player.html?isOutside=true&bvid=${bvid}&page=1&platform=web&autoplay=0`;
 }
 
 export function VideoModal({ phrase, onClose }: Props) {
@@ -29,6 +29,8 @@ export function VideoModal({ phrase, onClose }: Props) {
               src={getEmbedUrl(bvid)}
               allow="autoplay; fullscreen; clipboard-write"
               allowFullScreen
+              playsInline
+              webkit-playsinline="true"
             />
           ) : (
             <div className="video-modal-empty">
