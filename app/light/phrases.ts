@@ -8,14 +8,25 @@ export interface PhraseData {
 
 export const PHRASES: PhraseData[] = [
   { text: "我好累", bvid: "BV1ZE411r7tq" },
-  { text: "好好活下去", bvid: "BV12b9VBEEg5" },
+  { text: "会好起来的", bvid: "BV12b9VBEEg5" },
   { text: "迷茫", bvid: "BV1biR4YvEce" },
   { text: "加油", bvid: "BV1Sb41157hz" },
-  { text: "爱", bvid: "BV1Gy4y1M7WN" },
-  { text: "一切都失去了意义", bvid: "BV14fUFYVErT" },
+  { text: "Dear God", bvid: "BV1Jv4y1p7N5" },
+  { text: "蝴蝶", bvid: "BV1ew411J7Bv" },
   { text: "无病呻吟", bvid: "BV1NK4y137iy" },
   { text: "想开点", bvid: "BV1Ah4y1x71b" },
-  { text: "离开", bvid: "BV1hJqYBuEoP", dy: -6 },
+  { text: "痛苦", bvid: "BV1wwzUY5EPY", dy: -2 },
+  { text: "死", bvid: "BV1EkKH61E1K" },
+  { text: "要开心点", bvid: "BV1JtTM6kE3e" },
+  { text: "自由", bvid: "BV1tU4ve3E9z" },
+  { text: "对不起", bvid: "BV1LJ411d786" },
+  { text: "控制不住情绪", bvid: "BV1cHcqzoEk5" },
+  { text: "抱抱我", bvid: "BV11AVr6bEJp" },
+  { text: "我没事", bvid: "BV1hh4y1T7ge" },
+  { text: "你怎么还不去死", bvid: "BV1N95kz7Eqw" },
+  // { text: "你很懂吗" },
+  // { text: "我想逃" },
+  { text: "谁来救救我", bvid: "BV1LwfhBbEWj" },
 ]
 
 // export const PHRASES: PhraseData[] = [

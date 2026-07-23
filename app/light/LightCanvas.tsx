@@ -328,13 +328,14 @@ export function LightCanvas() {
 
       const sourceWidth = pageSource.offsetWidth || 1344;
       const sourceHeight = pageSource.offsetHeight || 756;
-      const pageWidth = 12.8;
+      const portrait = height > width;
+      const pageWidth = portrait ? 7.2 : 12.8;
       const pageHeight = pageWidth * (sourceHeight / sourceWidth);
       pageMesh.scale.set(pageWidth, pageHeight, 1);
       backing.scale.set(pageWidth, pageHeight, 1);
 
-      pageGroup.position.y = -0.38;
-      anchor.set(0, pageGroup.position.y + pageHeight / 2 + pageTopToAnchor, 1.18);
+      pageGroup.position.y = portrait ? -0.62 : -0.38;
+      anchor.set(0, pageGroup.position.y + pageHeight / 2 + pageTopToAnchor, portrait ? 1.1 : 1.18);
       ceilingCap.position.copy(anchor);
       ceilingCap.position.y += 0.08;
 
@@ -346,14 +347,16 @@ export function LightCanvas() {
         previous.copy(position);
       }
 
-      const fitHeight = pageHeight + 1.1;
-      const fitWidth = pageWidth + 0.6;
+      const fitHeight = pageHeight * 1.06;
+      const fitWidth = pageWidth * 1.06;
       const halfFov = THREE.MathUtils.degToRad(camera.fov * 0.5);
       const distanceForHeight = fitHeight / (2 * Math.tan(halfFov));
       const distanceForWidth = fitWidth / (2 * Math.tan(halfFov) * camera.aspect);
       const cameraDistance = Math.max(distanceForHeight, distanceForWidth);
-      camera.position.set(0, pageGroup.position.y - 0.62, cameraDistance);
-      camera.lookAt(0, pageGroup.position.y + 0.06, 0);
+      const cameraDrop = portrait ? 0.78 : 0.62;
+      const upwardTarget = portrait ? -0.04 : 0.06;
+      camera.position.set(0, pageGroup.position.y - cameraDrop, cameraDistance);
+      camera.lookAt(0, pageGroup.position.y + upwardTarget, 0);
       camera.updateMatrixWorld();
       interactions.update();
       canvas.requestPaint?.();

@@ -18,7 +18,6 @@ export function VideoModal({ phrase, onClose }: Props) {
     <div className="video-overlay" onClick={onClose}>
       <div className="video-modal" onClick={(e) => e.stopPropagation()}>
         <div className="video-modal-header">
-          <span className="video-modal-phrase">{phrase}</span>
           <button className="video-modal-close" onClick={onClose} aria-label="Close">
             ✕
           </button>
