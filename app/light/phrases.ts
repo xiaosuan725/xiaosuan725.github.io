@@ -7,12 +7,15 @@ export interface PhraseData {
 }
 
 export const PHRASES: PhraseData[] = [
-  { text: "活得太累了", bvid: "BV1ZE411r7tq" },
-  { text: "世界很大，别把自己困在情绪里，好好生活", bvid: "BV12b9VBEEg5" },
+  { text: "我好累", bvid: "BV1ZE411r7tq" },
+  { text: "好好活下去", bvid: "BV12b9VBEEg5" },
   { text: "迷茫", bvid: "BV1biR4YvEce" },
-  { text: "克服自卑", bvid: "BV1Sb41157hz" },
-  { text: "今天晚间新闻", bvid: "BV1Gy4y1M7WN" },
-  { text: "谁来挽救坠落的灵魂", bvid: "BV14fUFYVErT" },
+  { text: "加油", bvid: "BV1Sb41157hz" },
+  { text: "爱", bvid: "BV1Gy4y1M7WN" },
+  { text: "一切都失去了意义", bvid: "BV14fUFYVErT" },
+  { text: "无病呻吟", bvid: "BV1NK4y137iy" },
+  { text: "想开点", bvid: "BV1Ah4y1x71b" },
+  { text: "离开", bvid: "BV1hJqYBuEoP", dy: -6 },
 ]
 
 // export const PHRASES: PhraseData[] = [
