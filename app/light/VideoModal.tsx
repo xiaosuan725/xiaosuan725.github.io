@@ -8,7 +8,7 @@ interface Props {
 }
 
 function getEmbedUrl(bvid: string) {
-  return `https://player.bilibili.com/player.html?isOutside=true&bvid=${bvid}&page=1&platform=web&autoplay=0`;
+  return `https://player.bilibili.com/player.html?isOutside=true&bvid=${bvid}&p=1&autoplay=0`;
 }
 
 export function VideoModal({ phrase, onClose }: Props) {
