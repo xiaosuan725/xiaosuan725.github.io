@@ -27,7 +27,7 @@ export function PageSurface({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className="page-bg"
-        src={`${BASE_PATH}/cat.png`}
+        src={`${BASE_PATH}/cat.webp`}
         alt=""
         draggable={false}
       />
