@@ -2,6 +2,8 @@ import type { CSSProperties, Ref } from "react";
 import type { LightingSettings } from "./config";
 import { FloatingText } from "./FloatingText";
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 type PageSurfaceProps = {
   lighting: LightingSettings;
   onLightingChange: (patch: Partial<LightingSettings>) => void;
@@ -25,7 +27,7 @@ export function PageSurface({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className="page-bg"
-        src="/cat.png"
+        src={`${BASE_PATH}/cat.png`}
         alt=""
         draggable={false}
       />
